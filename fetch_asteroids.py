@@ -42,13 +42,14 @@ class ManageAsteroids:
         found_asteroids = []
         
         for asteroid in date_batch:
+            id = asteroid['id']
             name = asteroid['name']
             diameter_min = asteroid['estimated_diameter']['kilometers']['estimated_diameter_min']
             diameter_max = asteroid['estimated_diameter']['kilometers']['estimated_diameter_max']
             is_hazardous = asteroid['is_potentially_hazardous_asteroid']
             approach_date = asteroid['close_approach_data'][0]['close_approach_date_full']
             data_link = asteroid['links']['self']
-            asteroid_instance = {'name' : name, 'diameter_min_km' : diameter_min, 'diameter_max_km' : diameter_max, 'hazardous' : is_hazardous,
+            asteroid_instance = { 'id' : id,'name' : name, 'diameter_min_km' : diameter_min, 'diameter_max_km' : diameter_max, 'hazardous' : is_hazardous,
                                 'approach_date' : approach_date}
             self.save_json(asteroid_instance)
             found_asteroids.append((asteroid_instance,  data_link))
@@ -63,9 +64,3 @@ class ManageAsteroids:
             finalized_asteroids.append(self.parse_asteroids(data['near_earth_objects'][date]))
         return finalized_asteroids
     
-
-manager = ManageAsteroids()
-manager.parse_json()
-
-# print(type(os.getenv('DayDifference')))
-
