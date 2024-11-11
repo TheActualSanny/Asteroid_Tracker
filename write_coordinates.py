@@ -54,9 +54,9 @@ class ManageNormalized:
     @log_results(logger_name = 'asteroid_update')
     def update_asteroid(self, asteroid):
         with self._conn:
-            self._cur.execute(f'''UPDATE {self.table_name} SET approach_date = {asteroid['approach_date']}, semi_major_axis = {asteroid['semi_major_axis']},
+            self._cur.execute(f'''UPDATE {self.table_name} SET approach_date = {repr(asteroid['approach_date'])}, semi_major_axis = {asteroid['semi_major_axis']},
                                eccentricity = {asteroid['eccentricity']}, inclination = {asteroid['inclination']}, perihelion_argument = {asteroid['perihelion_argument']},
-                               ascending_node_langitude = {asteroid['ascending_node_longitude']}, mean_anomaly = {asteroid['mean_anomaly']} WHERE id = {asteroid['id']}''')
+                               ascending_node_longitude = {asteroid['ascending_node_longitude']}, mean_anomaly = {asteroid['mean_anomaly']} WHERE id = {asteroid['id']}''')
 
 
     
@@ -67,11 +67,12 @@ class ManageNormalized:
         table_data = (asteroid[1] for asteroid in self._cur.fetchall())
 
         for asteroid in asteroids:
-            if asteroid['id'] in table_data:
+            if int(asteroid['id']) in table_data:
                 self.update_asteroid(asteroid)
+                pass
             else:
                 self.insert_asteroid(asteroid)
 
         self.disconnect()    
-    
-        
+       
+     
