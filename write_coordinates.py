@@ -28,7 +28,7 @@ class ManageNormalized:
     @log_results(logger_name = 'normalized_table_creation')
     def create_table(self):
         with self._conn:
-            self._cur.execute(f'CREATE TABLE IF NOT EXISTS {self.table_name}(
+            self._cur.execute(f'''CREATE TABLE IF NOT EXISTS {self.table_name}(
                             pos SERIAL PRIMARY KEY,
                             id INTEGER,
                             name TEXT,
@@ -40,20 +40,24 @@ class ManageNormalized:
                             eccentricity REAL,
                             inclination REAL,
                             perihelion_argument REAL,
-                            ascending_node_langitude REAL,
+                            ascending_node_longitude REAL,
                             mean_anomaly REAL
-                            )')
+                            )''')
     
     @log_results(logger_name = 'normalized_asteroid_inserter')
     def insert_asteroid(self, asteroid):
         with self._conn:
-            self._cur.execute(f'INSERT INTO TABLE {self.table_name}(id, name, diameter_min, diameter_max, hazardous, approach_date, semi_major_axis,
-                              eccentricity, inclination, perihelion_argument, ascending_node_langitude, mean_anomaly)' + '''VALUES(%s, %s, %s, %s, %s, %s,
+            self._cur.execute(f'''INSERT INTO {self.table_name}(id, name, diameter_min, diameter_max, hazardous, approach_date, semi_major_axis,
+                              eccentricity, inclination, perihelion_argument, ascending_node_longitude, mean_anomaly)''' + '''VALUES(%s, %s, %s, %s, %s, %s,
                               %s, %s, %s, %s, %s, %s)''', tuple(asteroid.values()))
     
     @log_results(logger_name = 'asteroid_update')
-    def update_asteroid():
-        pass
+    def update_asteroid(self, asteroid):
+        with self._conn:
+            self._cur.execute(f'''UPDATE {self.table_name} SET approach_date = {asteroid['approach_date']}, semi_major_axis = {asteroid['semi_major_axis']},
+                               eccentricity = {asteroid['eccentricity']}, inclination = {asteroid['inclination']}, perihelion_argument = {asteroid['perihelion_argument']},
+                               ascending_node_langitude = {asteroid['ascending_node_longitude']}, mean_anomaly = {asteroid['mean_anomaly']} WHERE id = {asteroid['id']}''')
+
 
     
     def write_asteroids(self, asteroids):
@@ -67,4 +71,7 @@ class ManageNormalized:
                 self.update_asteroid(asteroid)
             else:
                 self.insert_asteroid(asteroid)
+
+        self.disconnect()    
+    
         
