@@ -4,6 +4,9 @@ import psycopg2
 import os
 from dotenv import load_dotenv
 from logger_conf import log_results
+from const_queries import insert_query, create_query
+
+load_dotenv()
 
 class ManageNormalized:
     def __init__(self):
@@ -24,32 +27,19 @@ class ManageNormalized:
     def disconnect(self):
         self._cur.close()
         self._conn.close()
-
+    
     @log_results(logger_name = 'normalized_table_creation')
     def create_table(self):
         with self._conn:
-            self._cur.execute(f'''CREATE TABLE IF NOT EXISTS {self.table_name}(
-                            pos SERIAL PRIMARY KEY,
-                            id INTEGER,
-                            name TEXT,
-                            diameter_min REAL,
-                            diameter_max REAL,
-                            hazardous BOOLEAN,
-                            approach_date TEXT,
-                            semi_major_axis REAL,
-                            eccentricity REAL,
-                            inclination REAL,
-                            perihelion_argument REAL,
-                            ascending_node_longitude REAL,
-                            mean_anomaly REAL
-                            )''')
+            self._cur.execute(create_query(self.table_name, pos = 'SERIAL PRIMARY KEY', id = 'INTEGER', name = 'TEXT', diameter_min = 'REAL', diameter_max = 'REAL', 
+                                           hazardous = 'BOOLEAN', approach_date = 'TEXT', semi_major_axis = 'REAL', eccentricity = 'REAL', inclination = 'REAL', perihelion_argument = 'REAL',
+                                           ascending_node_longitude = 'REAL', mean_anomaly = 'REAL'))
     
     @log_results(logger_name = 'normalized_asteroid_inserter')
     def insert_asteroid(self, asteroid):
         with self._conn:
-            self._cur.execute(f'''INSERT INTO {self.table_name}(id, name, diameter_min, diameter_max, hazardous, approach_date, semi_major_axis,
-                              eccentricity, inclination, perihelion_argument, ascending_node_longitude, mean_anomaly)''' + '''VALUES(%s, %s, %s, %s, %s, %s,
-                              %s, %s, %s, %s, %s, %s)''', tuple(asteroid.values()))
+            self._cur.execute(insert_query(self.table_name, 'id', 'name', 'diameter_min', 'diameter_max', 'hazardous', 'approach_date', 'semi_major_axis',
+                                           'eccentricity', 'inclination', 'perihelion_argument', 'ascending_node_longitude', 'mean_anomaly'), tuple(asteroid.values()))
     
     @log_results(logger_name = 'asteroid_update')
     def update_asteroid(self, asteroid):
@@ -58,8 +48,6 @@ class ManageNormalized:
                                eccentricity = {asteroid['eccentricity']}, inclination = {asteroid['inclination']}, perihelion_argument = {asteroid['perihelion_argument']},
                                ascending_node_longitude = {asteroid['ascending_node_longitude']}, mean_anomaly = {asteroid['mean_anomaly']} WHERE id = {asteroid['id']}''')
 
-
-    
     def write_asteroids(self, asteroids):
         self.connector()
         self.create_table()
@@ -75,4 +63,3 @@ class ManageNormalized:
 
         self.disconnect()    
        
-     
